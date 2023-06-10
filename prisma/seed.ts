@@ -9,6 +9,7 @@ import {
   AgentResponse,
   ContentTierResponse,
   EpisodeResponse,
+  EventResponse,
   ThemeResponse,
   WeaponResponse,
 } from './seed.interface';
@@ -223,6 +224,22 @@ const prisma = new PrismaClient();
   await Promise.allSettled(
     episodesInput.map((data) => prisma.episode.create({ data })),
   );
+
+  const eventsInput: Prisma.EventCreateManyInput[] = [];
+  const eventsResponse = await axios.get<EventResponse>(
+    'https://valorant-api.com/v1/events',
+  );
+
+  eventsResponse.data.data.forEach((event) => {
+    eventsInput.push({
+      uuid: event.uuid,
+      displayName: event.displayName,
+      start: event.startTime,
+      end: event.endTime,
+    });
+  });
+
+  await prisma.event.createMany({ data: eventsInput, skipDuplicates: true });
 })()
   .then(async () => {
     await prisma.$disconnect();

@@ -185,3 +185,12 @@ model EpisodeAct {
 
   @@map("episode_act")
 }
+
+model Event {
+  uuid        String   @id
+  displayName String   @map("display_name")
+  start       DateTime @db.Date
+  end         DateTime @db.Date
+
+  @@map("event")
+}

@@ -108,3 +108,15 @@ export interface EpisodeResponse {
   status: number;
   data: EpisodeData[];
 }
+
+export interface EventData {
+  uuid: string;
+  displayName: string;
+  startTime: string;
+  endTime: string;
+}
+
+export interface EventResponse {
+  status: number;
+  data: EventData[];
+}
