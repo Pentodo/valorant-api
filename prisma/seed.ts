@@ -8,6 +8,7 @@ import axios from 'axios';
 import {
   AgentResponse,
   ContentTierResponse,
+  EpisodeResponse,
   ThemeResponse,
   WeaponResponse,
 } from './seed.interface';
@@ -179,6 +180,48 @@ const prisma = new PrismaClient();
 
   await Promise.allSettled(
     skinsInput.map((data) => prisma.weaponSkin.create({ data })),
+  );
+
+  const episodesInput: Prisma.EpisodeCreateInput[] = [];
+  const episodesResponse = await axios.get<EpisodeResponse>(
+    'https://valorant-api.com/v1/seasons',
+  );
+
+  episodesResponse.data.data.forEach((episode, _index, arr) => {
+    if (episode.type) {
+      return;
+    }
+
+    const acts: Prisma.EpisodeActCreateManyEpisodeInput[] = [];
+    arr.forEach((act) => {
+      if (act.parentUuid !== episode.uuid) {
+        return;
+      }
+
+      acts.push({
+        uuid: act.uuid,
+        displayName: act.displayName,
+        start: act.startTime,
+        end: act.endTime,
+      });
+    });
+
+    episodesInput.push({
+      uuid: episode.uuid,
+      displayName: episode.displayName,
+      start: episode.startTime,
+      end: episode.endTime,
+      acts: {
+        createMany: {
+          data: acts,
+          skipDuplicates: true,
+        },
+      },
+    });
+  });
+
+  await Promise.allSettled(
+    episodesInput.map((data) => prisma.episode.create({ data })),
   );
 })()
   .then(async () => {

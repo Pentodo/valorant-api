@@ -94,3 +94,17 @@ export interface WeaponResponse {
   status: number;
   data: WeaponData[];
 }
+
+export interface EpisodeData {
+  uuid: string;
+  displayName: string;
+  type: string;
+  startTime: string;
+  endTime: string;
+  parentUuid: string;
+}
+
+export interface EpisodeResponse {
+  status: number;
+  data: EpisodeData[];
+}

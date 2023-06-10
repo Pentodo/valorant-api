@@ -162,3 +162,26 @@ model WeaponSkinLevel {
 
   @@map("weapon_skin_level")
 }
+
+model Episode {
+  uuid        String   @id
+  displayName String   @map("display_name")
+  start       DateTime @db.Date
+  end         DateTime @db.Date
+
+  acts EpisodeAct[]
+
+  @@map("episode")
+}
+
+model EpisodeAct {
+  uuid        String   @id
+  episodeUuid String   @map("episode_uuid")
+  displayName String   @map("display_name")
+  start       DateTime @db.Date
+  end         DateTime @db.Date
+
+  episode Episode @relation(fields: [episodeUuid], references: [uuid])
+
+  @@map("episode_act")
+}
