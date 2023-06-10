@@ -194,3 +194,11 @@ model Event {
 
   @@map("event")
 }
+
+model Currency {
+  uuid        String @id
+  displayName String @map("display_name")
+  displayIcon String @map("display_icon")
+
+  @@map("currency")
+}

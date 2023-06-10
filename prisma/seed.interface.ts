@@ -120,3 +120,14 @@ export interface EventResponse {
   status: number;
   data: EventData[];
 }
+
+export interface CurrencyData {
+  uuid: string;
+  displayNameSingular: string;
+  displayIcon: string;
+}
+
+export interface CurrencyResponse {
+  status: number;
+  data: CurrencyData[];
+}

@@ -8,6 +8,7 @@ import axios from 'axios';
 import {
   AgentResponse,
   ContentTierResponse,
+  CurrencyResponse,
   EpisodeResponse,
   EventResponse,
   ThemeResponse,
@@ -240,6 +241,24 @@ const prisma = new PrismaClient();
   });
 
   await prisma.event.createMany({ data: eventsInput, skipDuplicates: true });
+
+  const currenciesInput: Prisma.CurrencyCreateManyInput[] = [];
+  const currenciesResponse = await axios.get<CurrencyResponse>(
+    'https://valorant-api.com/v1/currencies',
+  );
+
+  currenciesResponse.data.data.forEach((currency) => {
+    currenciesInput.push({
+      uuid: currency.uuid,
+      displayName: currency.displayNameSingular,
+      displayIcon: currency.displayIcon,
+    });
+  });
+
+  await prisma.currency.createMany({
+    data: currenciesInput,
+    skipDuplicates: true,
+  });
 })()
   .then(async () => {
     await prisma.$disconnect();
