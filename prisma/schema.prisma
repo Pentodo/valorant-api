@@ -90,6 +90,7 @@ model Theme {
 
   skins   WeaponSkin[]
   buddies Buddy[]
+  cards   Card[]
 
   @@map("theme")
 }
@@ -206,11 +207,24 @@ model Currency {
 
 model Buddy {
   uuid        String  @id
-  displayName String
-  displayIcon String
-  themeUuid   String?
+  displayName String  @map("display_name")
+  displayIcon String  @map("display_icon")
+  themeUuid   String? @map("theme_uuid")
 
   theme Theme? @relation(fields: [themeUuid], references: [uuid])
 
   @@map("buddy")
+}
+
+model Card {
+  uuid        String  @id
+  displayName String  @map("display_name")
+  displayIcon String  @map("display_icon")
+  wideArt     String  @map("wide_art")
+  largeArt    String  @map("large_art")
+  themeUuid   String? @map("theme_uuid")
+
+  theme Theme? @relation(fields: [themeUuid], references: [uuid])
+
+  @@map("card")
 }

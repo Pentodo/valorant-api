@@ -143,3 +143,17 @@ export interface BuddyResponse {
   status: number;
   data: BuddyData[];
 }
+
+export interface CardData {
+  uuid: string;
+  displayName: string;
+  themeUuid: string;
+  displayIcon: string;
+  wideArt: string;
+  largeArt: string;
+}
+
+export interface CardResponse {
+  status: number;
+  data: CardData[];
+}

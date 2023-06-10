@@ -8,6 +8,7 @@ import axios from 'axios';
 import {
   AgentResponse,
   BuddyResponse,
+  CardResponse,
   ContentTierResponse,
   CurrencyResponse,
   EpisodeResponse,
@@ -277,6 +278,27 @@ const prisma = new PrismaClient();
 
   await prisma.buddy.createMany({
     data: buddiesInput,
+    skipDuplicates: true,
+  });
+
+  const cardsInput: Prisma.CardCreateManyInput[] = [];
+  const cardsResponse = await axios.get<CardResponse>(
+    'https://valorant-api.com/v1/playercards',
+  );
+
+  cardsResponse.data.data.forEach((card) => {
+    cardsInput.push({
+      uuid: card.uuid,
+      displayName: card.displayName,
+      displayIcon: card.displayIcon,
+      wideArt: card.wideArt,
+      largeArt: card.largeArt,
+      themeUuid: card.themeUuid,
+    });
+  });
+
+  await prisma.card.createMany({
+    data: cardsInput,
     skipDuplicates: true,
   });
 })()
