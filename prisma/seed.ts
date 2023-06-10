@@ -1,44 +1,13 @@
-import { AbilitySlot, Prisma, PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import axios from 'axios';
+import { AgentResponse } from './seed.interface';
 
 const prisma = new PrismaClient();
-
-interface AgentData {
-  uuid: string;
-  displayName: string;
-  description: string;
-  developerName: string;
-  displayIcon: string;
-  fullPortrait: string;
-  killfeedPortrait: string;
-  backgroundGradientColors: string[];
-  isPlayableCharacter: boolean;
-  role: {
-    uuid: string;
-    displayName: string;
-    description: string;
-    displayIcon: string;
-  };
-  abilities: [
-    {
-      slot: AbilitySlot;
-      displayName: string;
-      description: string;
-      displayIcon: string;
-    },
-  ];
-  voiceLine: { mediaList: [{ wave: string }] };
-}
-
-interface AgentResponse {
-  status: number;
-  data: AgentData[];
-}
 
 (async () => {
   const agentsInput: Prisma.AgentCreateInput[] = [];
   const agentsResponse = await axios.get<AgentResponse>(
-    'https://valorant-api.com/v1/agents?language=pt-BR&isPlayableCharacter=true',
+    'https://valorant-api.com/v1/agents?isPlayableCharacter=true',
   );
 
   for (let i = 0; i < agentsResponse.data.data.length; i++) {

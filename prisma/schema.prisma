@@ -19,22 +19,22 @@ model Agent {
   fullPortrait     String @map("full_portrait")
   killfeedPortrait String @map("killfeed_portrait")
   voiceLine        String @map("voice_line")
-  roleId           String @map("role_id")
+  roleUuid         String @map("role_uuid")
 
   colors    AgentColor[]
-  role      AgentRole      @relation(fields: [roleId], references: [uuid])
+  role      AgentRole      @relation(fields: [roleUuid], references: [uuid])
   abilities AgentAbility[]
 
   @@map("agent")
 }
 
 model AgentColor {
-  agentId String @map("agent_id")
-  color   String
+  agentUuid String @map("agent_uuid")
+  color     String
 
-  agent Agent @relation(fields: [agentId], references: [uuid])
+  agent Agent @relation(fields: [agentUuid], references: [uuid])
 
-  @@unique([agentId, color])
+  @@id([agentUuid, color])
   @@map("agent_color")
 }
 
@@ -50,15 +50,15 @@ model AgentRole {
 }
 
 model AgentAbility {
-  agentId     String      @map("agent_id")
+  agentUuid   String      @map("agent_uuid")
   slot        AbilitySlot
   displayName String      @map("display_name")
   description String
   displayIcon String      @map("display_icon")
 
-  agent Agent @relation(fields: [agentId], references: [uuid])
+  agent Agent @relation(fields: [agentUuid], references: [uuid])
 
-  @@unique([agentId, slot])
+  @@id([agentUuid, slot])
   @@map("agent_ability")
 }
 
@@ -67,4 +67,8 @@ enum AbilitySlot {
   Ability2
   Grenade
   Ultimate
+
+  @@map("ability_slot")
+}
+
 }
