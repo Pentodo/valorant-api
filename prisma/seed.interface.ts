@@ -131,3 +131,15 @@ export interface CurrencyResponse {
   status: number;
   data: CurrencyData[];
 }
+
+export interface BuddyData {
+  uuid: string;
+  displayName: string;
+  themeUuid: string;
+  displayIcon: string;
+}
+
+export interface BuddyResponse {
+  status: number;
+  data: BuddyData[];
+}

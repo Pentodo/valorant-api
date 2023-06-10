@@ -7,6 +7,7 @@ import {
 import axios from 'axios';
 import {
   AgentResponse,
+  BuddyResponse,
   ContentTierResponse,
   CurrencyResponse,
   EpisodeResponse,
@@ -257,6 +258,25 @@ const prisma = new PrismaClient();
 
   await prisma.currency.createMany({
     data: currenciesInput,
+    skipDuplicates: true,
+  });
+
+  const buddiesInput: Prisma.BuddyCreateManyInput[] = [];
+  const buddiesResponse = await axios.get<BuddyResponse>(
+    'https://valorant-api.com/v1/buddies',
+  );
+
+  buddiesResponse.data.data.forEach((buddy) => {
+    buddiesInput.push({
+      uuid: buddy.uuid,
+      displayName: buddy.displayName,
+      displayIcon: buddy.displayIcon,
+      themeUuid: buddy.themeUuid,
+    });
+  });
+
+  await prisma.buddy.createMany({
+    data: buddiesInput,
     skipDuplicates: true,
   });
 })()
