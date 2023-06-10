@@ -1,5 +1,3 @@
-import { AbilitySlot } from '@prisma/client';
-
 export interface AgentData {
   uuid: string;
   displayName: string;
@@ -17,7 +15,7 @@ export interface AgentData {
   };
   abilities: [
     {
-      slot: AbilitySlot;
+      slot: string;
       displayName: string;
       description: string;
       displayIcon: string;
@@ -29,4 +27,70 @@ export interface AgentData {
 export interface AgentResponse {
   status: number;
   data: AgentData[];
+}
+
+export interface ContentTierData {
+  uuid: string;
+  displayName: string;
+  devName: string;
+  rank: number;
+  highlightColor: string;
+  displayIcon: string;
+}
+
+export interface ContentTierResponse {
+  status: number;
+  data: ContentTierData[];
+}
+
+export interface ThemeData {
+  uuid: string;
+  displayName: string;
+}
+
+export interface ThemeResponse {
+  status: number;
+  data: ThemeData[];
+}
+
+export interface WeaponSkinResponse {
+  uuid: string;
+  displayName: string;
+  themeUuid: string; // theme
+  contentTierUuid: string; // tier
+  displayIcon: string;
+  wallpaper: string;
+  chromas: [
+    {
+      uuid: string;
+      displayName: string;
+      displayIcon: string;
+      swatch: string;
+      streamedVideo: string;
+    },
+  ];
+  levels: [
+    {
+      uuid: string;
+      displayName: string;
+      levelItem: string;
+      displayIcon: string;
+      streamedVideo: string;
+    },
+  ];
+}
+
+export interface WeaponData {
+  uuid: string;
+  displayName: string;
+  category: string;
+  defaultSkinUuid: string; // skin
+  displayIcon: string;
+  killStreamIcon: string;
+  skins: WeaponSkinResponse[];
+}
+
+export interface WeaponResponse {
+  status: number;
+  data: WeaponData[];
 }

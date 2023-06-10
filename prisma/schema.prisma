@@ -49,6 +49,15 @@ model AgentRole {
   @@map("agent_role")
 }
 
+enum AbilitySlot {
+  Ability1
+  Ability2
+  Grenade
+  Ultimate
+
+  @@map("ability_slot")
+}
+
 model AgentAbility {
   agentUuid   String      @map("agent_uuid")
   slot        AbilitySlot
@@ -62,13 +71,94 @@ model AgentAbility {
   @@map("agent_ability")
 }
 
-enum AbilitySlot {
-  Ability1
-  Ability2
-  Grenade
-  Ultimate
+model ContentTier {
+  uuid          String @id
+  displayName   String @map("display_name")
+  developerName String @map("developer_name")
+  rank          Int    @unique
+  color         String
+  displayIcon   String @map("display_icon")
 
-  @@map("ability_slot")
+  skins WeaponSkin[]
+
+  @@map("content_tier")
 }
 
+model Theme {
+  uuid        String @id
+  displayName String @map("display_name")
+
+  skins WeaponSkin[]
+
+  @@map("theme")
+}
+
+enum WeaponCategory {
+  Melee
+  Sidearm
+  Shotgun
+  SMG
+  Rifle
+  Sniper
+  Heavy
+
+  @@map("weapon_category")
+}
+
+model Weapon {
+  uuid           String         @id
+  displayName    String         @map("display_name")
+  category       WeaponCategory
+  displayIcon    String         @map("display_icon")
+  killStreamIcon String         @map("kill_stream_icon")
+
+  skins WeaponSkin[]
+
+  @@map("weapon")
+}
+
+model WeaponSkin {
+  uuid        String  @id
+  weaponUuid  String  @map("weapon_uuid")
+  displayName String  @map("display_name")
+  displayIcon String? @map("display_icon")
+  wallpaper   String?
+  themeUuid   String? @map("theme_uuid")
+  tierUuid    String? @map("tier_uuid")
+
+  weapon Weapon @relation(fields: [weaponUuid], references: [uuid])
+
+  theme Theme?       @relation(fields: [themeUuid], references: [uuid])
+  tier  ContentTier? @relation(fields: [tierUuid], references: [uuid])
+
+  chromas WeaponSkinChroma[]
+  levels  WeaponSkinLevel[]
+
+  @@map("weapon_skin")
+}
+
+model WeaponSkinChroma {
+  uuid           String  @id
+  weaponSkinUuid String  @map("skin_uuid")
+  displayName    String  @map("display_name")
+  displayIcon    String? @map("display_icon")
+  color          String?
+  video          String?
+
+  skin WeaponSkin @relation(fields: [weaponSkinUuid], references: [uuid])
+
+  @@map("weapon_skin_chroma")
+}
+
+model WeaponSkinLevel {
+  uuid           String  @id
+  weaponSkinUuid String  @map("skin_uuid")
+  displayName    String  @map("display_name")
+  displayIcon    String? @map("display_icon")
+  type           String?
+  video          String?
+
+  skin WeaponSkin @relation(fields: [weaponSkinUuid], references: [uuid])
+
+  @@map("weapon_skin_level")
 }
