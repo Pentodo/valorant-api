@@ -1,3 +1,13 @@
+## .env
+
+```bash
+# connection string (trocar os valores de duplas chaves)
+$ DATABASE_URL="postgresql://{{user}}:{{password}}@{{host}}:{{port}}/{{database}}?schema={{schema}}"
+
+# linguagem desejada para os dados consumidos
+$ LANGUAGE="en-US"
+```
+
 ## Installation
 
 ```bash
