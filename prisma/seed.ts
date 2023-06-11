@@ -5,6 +5,7 @@ import {
   WeaponCategory,
 } from '@prisma/client';
 import axios from 'axios';
+import 'dotenv/config';
 import {
   AgentResponse,
   BuddyResponse,
@@ -21,11 +22,17 @@ import {
 
 const prisma = new PrismaClient();
 
+const http = axios.create();
+const language = process.env.LANGUAGE || 'en-US';
+
+http.defaults.baseURL = 'https://valorant-api.com';
+http.defaults.params = new URLSearchParams({ language });
+
 (async () => {
   const agentsInput: Prisma.AgentCreateInput[] = [];
-  const agentsResponse = await axios.get<AgentResponse>(
-    'https://valorant-api.com/v1/agents?isPlayableCharacter=true',
-  );
+  const agentsResponse = await http.get<AgentResponse>('/v1/agents', {
+    params: new URLSearchParams({ language, isPlayableCharacter: 'true' }),
+  });
 
   agentsResponse.data.data.forEach((agent) => {
     const abilities: Prisma.AgentAbilityCreateManyAgentInput[] = [];
@@ -83,8 +90,8 @@ const prisma = new PrismaClient();
   );
 
   const contentTiersInput: Prisma.ContentTierCreateManyInput[] = [];
-  const contentTiersResponse = await axios.get<ContentTierResponse>(
-    'https://valorant-api.com/v1/contenttiers',
+  const contentTiersResponse = await http.get<ContentTierResponse>(
+    '/v1/contenttiers',
   );
 
   contentTiersResponse.data.data.forEach((contentTier) => {
@@ -104,9 +111,7 @@ const prisma = new PrismaClient();
   });
 
   const themesInput: Prisma.ThemeCreateManyInput[] = [];
-  const themesResponse = await axios.get<ThemeResponse>(
-    'https://valorant-api.com/v1/themes',
-  );
+  const themesResponse = await http.get<ThemeResponse>('/v1/themes');
 
   themesResponse.data.data.forEach((contentTier) => {
     themesInput.push({
@@ -121,9 +126,7 @@ const prisma = new PrismaClient();
   });
 
   const skinsInput: Prisma.WeaponSkinCreateInput[] = [];
-  const weaponsResponse = await axios.get<WeaponResponse>(
-    'https://valorant-api.com/v1/weapons',
-  );
+  const weaponsResponse = await http.get<WeaponResponse>('/v1/weapons');
 
   weaponsResponse.data.data.forEach((weapon) => {
     weapon.skins.forEach((skin) => {
@@ -189,9 +192,7 @@ const prisma = new PrismaClient();
   );
 
   const episodesInput: Prisma.EpisodeCreateInput[] = [];
-  const episodesResponse = await axios.get<EpisodeResponse>(
-    'https://valorant-api.com/v1/seasons',
-  );
+  const episodesResponse = await http.get<EpisodeResponse>('/v1/seasons');
 
   episodesResponse.data.data.forEach((episode, _index, arr) => {
     if (episode.type) {
@@ -231,9 +232,7 @@ const prisma = new PrismaClient();
   );
 
   const eventsInput: Prisma.EventCreateManyInput[] = [];
-  const eventsResponse = await axios.get<EventResponse>(
-    'https://valorant-api.com/v1/events',
-  );
+  const eventsResponse = await http.get<EventResponse>('/v1/events');
 
   eventsResponse.data.data.forEach((event) => {
     eventsInput.push({
@@ -247,9 +246,7 @@ const prisma = new PrismaClient();
   await prisma.event.createMany({ data: eventsInput, skipDuplicates: true });
 
   const currenciesInput: Prisma.CurrencyCreateManyInput[] = [];
-  const currenciesResponse = await axios.get<CurrencyResponse>(
-    'https://valorant-api.com/v1/currencies',
-  );
+  const currenciesResponse = await http.get<CurrencyResponse>('/v1/currencies');
 
   currenciesResponse.data.data.forEach((currency) => {
     currenciesInput.push({
@@ -265,9 +262,7 @@ const prisma = new PrismaClient();
   });
 
   const buddiesInput: Prisma.BuddyCreateManyInput[] = [];
-  const buddiesResponse = await axios.get<BuddyResponse>(
-    'https://valorant-api.com/v1/buddies',
-  );
+  const buddiesResponse = await http.get<BuddyResponse>('/v1/buddies');
 
   buddiesResponse.data.data.forEach((buddy) => {
     buddiesInput.push({
@@ -284,9 +279,7 @@ const prisma = new PrismaClient();
   });
 
   const cardsInput: Prisma.CardCreateManyInput[] = [];
-  const cardsResponse = await axios.get<CardResponse>(
-    'https://valorant-api.com/v1/playercards',
-  );
+  const cardsResponse = await http.get<CardResponse>('/v1/playercards');
 
   cardsResponse.data.data.forEach((card) => {
     cardsInput.push({
@@ -305,9 +298,7 @@ const prisma = new PrismaClient();
   });
 
   const spraysInput: Prisma.SprayCreateManyInput[] = [];
-  const spraysResponse = await axios.get<SprayResponse>(
-    'https://valorant-api.com/v1/sprays',
-  );
+  const spraysResponse = await http.get<SprayResponse>('/v1/sprays');
 
   spraysResponse.data.data.forEach((spray) => {
     spraysInput.push({
@@ -327,9 +318,7 @@ const prisma = new PrismaClient();
   });
 
   const titlesInput: Prisma.TitleCreateManyInput[] = [];
-  const titlesResponse = await axios.get<TitleResponse>('/v1/playertitles', {
-    baseURL: 'https://valorant-api.com',
-  });
+  const titlesResponse = await http.get<TitleResponse>('/v1/playertitles');
 
   titlesResponse.data.data.forEach((title) => {
     if (!title.displayName) {
