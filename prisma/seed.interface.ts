@@ -172,3 +172,14 @@ export interface SprayResponse {
   status: number;
   data: SprayData[];
 }
+
+export interface TitleData {
+  uuid: string;
+  displayName: string;
+  titleText: string;
+}
+
+export interface TitleResponse {
+  status: number;
+  data: TitleData[];
+}

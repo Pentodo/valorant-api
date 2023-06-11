@@ -15,6 +15,7 @@ import {
   EventResponse,
   SprayResponse,
   ThemeResponse,
+  TitleResponse,
   WeaponResponse,
 } from './seed.interface';
 
@@ -322,6 +323,28 @@ const prisma = new PrismaClient();
 
   await prisma.spray.createMany({
     data: spraysInput,
+    skipDuplicates: true,
+  });
+
+  const titlesInput: Prisma.TitleCreateManyInput[] = [];
+  const titlesResponse = await axios.get<TitleResponse>('/v1/playertitles', {
+    baseURL: 'https://valorant-api.com',
+  });
+
+  titlesResponse.data.data.forEach((title) => {
+    if (!title.displayName) {
+      return;
+    }
+
+    titlesInput.push({
+      uuid: title.uuid,
+      displayName: title.displayName,
+      text: title.titleText,
+    });
+  });
+
+  await prisma.title.createMany({
+    data: titlesInput,
     skipDuplicates: true,
   });
 })()

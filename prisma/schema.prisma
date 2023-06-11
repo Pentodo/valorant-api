@@ -249,3 +249,11 @@ model Spray {
 
   @@map("spray")
 }
+
+model Title {
+  uuid        String @id
+  displayName String @map("display_name")
+  text        String
+
+  @@map("title")
+}
