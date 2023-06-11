@@ -13,6 +13,7 @@ import {
   CurrencyResponse,
   EpisodeResponse,
   EventResponse,
+  SprayResponse,
   ThemeResponse,
   WeaponResponse,
 } from './seed.interface';
@@ -299,6 +300,28 @@ const prisma = new PrismaClient();
 
   await prisma.card.createMany({
     data: cardsInput,
+    skipDuplicates: true,
+  });
+
+  const spraysInput: Prisma.SprayCreateManyInput[] = [];
+  const spraysResponse = await axios.get<SprayResponse>(
+    'https://valorant-api.com/v1/sprays',
+  );
+
+  spraysResponse.data.data.forEach((spray) => {
+    spraysInput.push({
+      uuid: spray.uuid,
+      displayName: spray.displayName,
+      category: spray.category ? 'Contextual' : null,
+      displayIcon: spray.displayIcon,
+      art: spray.fullTransparentIcon,
+      animation: spray.animationPng,
+      themeUuid: spray.themeUuid,
+    });
+  });
+
+  await prisma.spray.createMany({
+    data: spraysInput,
     skipDuplicates: true,
   });
 })()

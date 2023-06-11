@@ -91,6 +91,7 @@ model Theme {
   skins   WeaponSkin[]
   buddies Buddy[]
   cards   Card[]
+  sprays  Spray[]
 
   @@map("theme")
 }
@@ -227,4 +228,24 @@ model Card {
   theme Theme? @relation(fields: [themeUuid], references: [uuid])
 
   @@map("card")
+}
+
+enum SprayCategory {
+  Contextual
+
+  @@map("spray_category")
+}
+
+model Spray {
+  uuid        String         @id
+  displayName String         @map("display_name")
+  category    SprayCategory?
+  displayIcon String         @map("display_icon")
+  art         String?
+  animation   String?
+  themeUuid   String?        @map("theme_uuid")
+
+  theme Theme? @relation(fields: [themeUuid], references: [uuid])
+
+  @@map("spray")
 }

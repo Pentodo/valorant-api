@@ -157,3 +157,18 @@ export interface CardResponse {
   status: number;
   data: CardData[];
 }
+
+export interface SprayData {
+  uuid: string;
+  displayName: string;
+  category: string;
+  themeUuid: string;
+  displayIcon: string;
+  fullTransparentIcon: string;
+  animationPng: string;
+}
+
+export interface SprayResponse {
+  status: number;
+  data: SprayData[];
+}
