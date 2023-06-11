@@ -1,3 +1,5 @@
+import { ContractType, RewardType } from '@prisma/client';
+
 export interface AgentData {
   uuid: string;
   displayName: string;
@@ -182,4 +184,38 @@ export interface TitleData {
 export interface TitleResponse {
   status: number;
   data: TitleData[];
+}
+
+export interface Reward {
+  uuid: string;
+  type: RewardType;
+  isFree?: boolean;
+}
+
+export interface ContractData {
+  uuid: string;
+  displayName: string;
+  displayIcon: string;
+  content: {
+    relationType: ContractType;
+    relationUuid: string;
+    chapters: [
+      {
+        isEpilogue: boolean;
+        freeRewards: Reward[];
+        levels: [
+          {
+            reward: Reward;
+            xp: number;
+            vpCost: number;
+          },
+        ];
+      },
+    ];
+  };
+}
+
+export interface ContractResponse {
+  status: number;
+  data: ContractData[];
 }

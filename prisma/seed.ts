@@ -2,6 +2,7 @@ import {
   AbilitySlot,
   Prisma,
   PrismaClient,
+  RewardType,
   WeaponCategory,
 } from '@prisma/client';
 import axios from 'axios';
@@ -11,6 +12,7 @@ import {
   BuddyResponse,
   CardResponse,
   ContentTierResponse,
+  ContractResponse,
   CurrencyResponse,
   EpisodeResponse,
   EventResponse,
@@ -336,6 +338,68 @@ http.defaults.params = new URLSearchParams({ language });
     data: titlesInput,
     skipDuplicates: true,
   });
+
+  const rewardsInput: Prisma.ContractRewardCreateInput[] = [];
+  const contractsResponse = await http.get<ContractResponse>('/v1/contracts');
+
+  contractsResponse.data.data.forEach((contract) => {
+    contract.content.chapters.forEach((chapter) => {
+      const greaterXP = Math.max(...chapter.levels.map((level) => level.xp));
+
+      if (chapter.freeRewards) {
+        chapter.freeRewards.forEach((reward) => {
+          reward.isFree = true;
+
+          chapter.levels.push({ xp: greaterXP, vpCost: 0, reward });
+        });
+      }
+
+      chapter.levels.forEach((level) => {
+        const rewardInput: Prisma.ContractRewardCreateInput = {
+          type: level.reward.type,
+          isFree: level.reward.isFree || false,
+          xp: level.xp,
+          vpCost: level.vpCost,
+          contract: {
+            connectOrCreate: {
+              where: {
+                uuid: contract.uuid,
+              },
+              create: {
+                uuid: contract.uuid,
+                displayName: contract.displayName,
+                displayIcon: contract.displayIcon,
+                type: contract.content.relationType,
+              },
+            },
+          },
+        };
+
+        const typeToEntity = {
+          Spray: 'spray',
+          PlayerCard: 'card',
+          Title: 'title',
+          Character: 'agent',
+          EquippableCharmLevel: 'buddy',
+          EquippableSkinLevel: 'skin',
+        };
+
+        if (rewardInput.type !== RewardType.Currency) {
+          rewardInput[typeToEntity[rewardInput.type]] = {
+            connect: {
+              uuid: level.reward.uuid,
+            },
+          };
+        }
+
+        rewardsInput.push(rewardInput);
+      });
+    });
+  });
+
+  await Promise.allSettled(
+    rewardsInput.map((data) => prisma.contractReward.create({ data })),
+  );
 })()
   .then(async () => {
     await prisma.$disconnect();

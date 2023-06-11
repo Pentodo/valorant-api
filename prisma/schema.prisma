@@ -11,18 +11,22 @@ datasource db {
 }
 
 model Agent {
-  uuid             String @id
-  displayName      String @map("display_name")
-  developerName    String @map("developer_name")
+  uuid             String  @id
+  displayName      String  @map("display_name")
+  developerName    String  @map("developer_name")
   description      String
-  displayIcon      String @map("display_icon")
-  fullPortrait     String @map("full_portrait")
-  killfeedPortrait String @map("killfeed_portrait")
-  voiceLine        String @map("voice_line")
-  roleUuid         String @map("role_uuid")
+  displayIcon      String  @map("display_icon")
+  fullPortrait     String  @map("full_portrait")
+  killfeedPortrait String  @map("killfeed_portrait")
+  voiceLine        String  @map("voice_line")
+  roleUuid         String  @map("role_uuid")
+  rewardUuid       String? @unique @map("reward_uuid")
+
+  role AgentRole @relation(fields: [roleUuid], references: [uuid])
+
+  reward ContractReward? @relation(fields: [rewardUuid], references: [uuid])
 
   colors    AgentColor[]
-  role      AgentRole      @relation(fields: [roleUuid], references: [uuid])
   abilities AgentAbility[]
 
   @@map("agent")
@@ -123,16 +127,18 @@ model Weapon {
 model WeaponSkin {
   uuid        String  @id
   weaponUuid  String  @map("weapon_uuid")
+  tierUuid    String  @map("tier_uuid")
+  themeUuid   String  @map("theme_uuid")
   displayName String  @map("display_name")
   displayIcon String? @map("display_icon")
   wallpaper   String?
-  themeUuid   String? @map("theme_uuid")
-  tierUuid    String? @map("tier_uuid")
+  rewardUuid  String? @unique @map("reward_uuid")
 
-  weapon Weapon @relation(fields: [weaponUuid], references: [uuid])
+  weapon Weapon      @relation(fields: [weaponUuid], references: [uuid])
+  tier   ContentTier @relation(fields: [tierUuid], references: [uuid])
+  theme  Theme       @relation(fields: [themeUuid], references: [uuid])
 
-  theme Theme?       @relation(fields: [themeUuid], references: [uuid])
-  tier  ContentTier? @relation(fields: [tierUuid], references: [uuid])
+  reward ContractReward? @relation(fields: [rewardUuid], references: [uuid])
 
   chromas WeaponSkinChroma[]
   levels  WeaponSkinLevel[]
@@ -211,8 +217,10 @@ model Buddy {
   displayName String  @map("display_name")
   displayIcon String  @map("display_icon")
   themeUuid   String? @map("theme_uuid")
+  rewardUuid  String? @unique @map("reward_uuid")
 
-  theme Theme? @relation(fields: [themeUuid], references: [uuid])
+  theme  Theme?          @relation(fields: [themeUuid], references: [uuid])
+  reward ContractReward? @relation(fields: [rewardUuid], references: [uuid])
 
   @@map("buddy")
 }
@@ -224,8 +232,10 @@ model Card {
   wideArt     String  @map("wide_art")
   largeArt    String  @map("large_art")
   themeUuid   String? @map("theme_uuid")
+  rewardUuid  String? @unique @map("reward_uuid")
 
-  theme Theme? @relation(fields: [themeUuid], references: [uuid])
+  theme  Theme?          @relation(fields: [themeUuid], references: [uuid])
+  reward ContractReward? @relation(fields: [rewardUuid], references: [uuid])
 
   @@map("card")
 }
@@ -244,16 +254,72 @@ model Spray {
   art         String?
   animation   String?
   themeUuid   String?        @map("theme_uuid")
+  rewardUuid  String?        @unique @map("reward_uuid")
 
-  theme Theme? @relation(fields: [themeUuid], references: [uuid])
+  theme  Theme?          @relation(fields: [themeUuid], references: [uuid])
+  reward ContractReward? @relation(fields: [rewardUuid], references: [uuid])
 
   @@map("spray")
 }
 
 model Title {
-  uuid        String @id
-  displayName String @map("display_name")
+  uuid        String  @id
+  displayName String  @map("display_name")
   text        String
+  rewardUuid  String? @unique @map("reward_uuid")
+
+  reward ContractReward? @relation(fields: [rewardUuid], references: [uuid])
 
   @@map("title")
+}
+
+enum ContractType {
+  Agent
+  Event
+  Season
+
+  @@map("contract_type")
+}
+
+model Contract {
+  uuid        String       @id
+  displayName String       @map("display_name")
+  displayIcon String?      @map("display_icon")
+  type        ContractType
+
+  rewards ContractReward[]
+
+  @@map("contract")
+}
+
+enum RewardType {
+  Spray
+  PlayerCard
+  Title
+  Character
+  EquippableCharmLevel
+  EquippableSkinLevel
+  Currency
+
+  @@map("reward_type")
+}
+
+model ContractReward {
+  uuid         String     @id @default(uuid())
+  contractUuid String     @map("contract_uuid")
+  type         RewardType
+  isFree       Boolean    @default(false) @map("is_free")
+  xp           Int
+  vpCost       Int        @map("vp_cost")
+
+  contract Contract @relation(fields: [contractUuid], references: [uuid])
+
+  title Title?
+  spray Spray?
+  card  Card?
+  buddy Buddy?
+  skin  WeaponSkin?
+  agent Agent?
+
+  @@map("contract_reward")
 }

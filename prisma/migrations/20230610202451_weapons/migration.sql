@@ -36,11 +36,11 @@ CREATE TABLE "weapon" (
 CREATE TABLE "weapon_skin" (
     "uuid" TEXT NOT NULL,
     "weapon_uuid" TEXT NOT NULL,
+    "tier_uuid" TEXT,
+    "theme_uuid" TEXT,
     "display_name" TEXT NOT NULL,
     "display_icon" TEXT,
     "wallpaper" TEXT,
-    "theme_uuid" TEXT,
-    "tier_uuid" TEXT,
 
     CONSTRAINT "weapon_skin_pkey" PRIMARY KEY ("uuid")
 );
