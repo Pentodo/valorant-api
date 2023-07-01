@@ -1,12 +1,15 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsArray, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsEnum, IsOptional } from 'class-validator';
+import { WeaponName } from './weapons.interface';
 
-export class DisplayNamesQueryDTO {
-  @ApiPropertyOptional()
+export class WeaponNamesQueryDTO {
+  @ApiPropertyOptional({ enum: WeaponName, isArray: true })
   @IsOptional()
   @IsArray()
-  @IsString({ each: true })
-  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
-  displayNames?: string[];
+  @IsEnum(WeaponName, { each: true })
+  @Transform(({ value }) =>
+    value ? (Array.isArray(value) ? value : [value]) : undefined,
+  )
+  displayNames?: WeaponName[];
 }

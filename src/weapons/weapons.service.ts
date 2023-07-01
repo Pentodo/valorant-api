@@ -1,14 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { WeaponName } from './weapons.interface';
 
 @Injectable()
 export class WeaponsService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async countSkin(displayNames: string[]) {
+  async countSkin(displayNames: WeaponName[]) {
     const weapons = await this.prismaService.weapon.findMany({
       include: { _count: true },
-      where: { displayName: displayNames ? { in: displayNames } : undefined },
+      where: { displayName: { in: displayNames } },
     });
 
     return weapons.map((weapon) => ({
@@ -17,14 +18,13 @@ export class WeaponsService {
     }));
   }
 
-  async countSkinGroupedByCategory(displayNames: string[]) {
+  async countSkinGroupedByCategory(displayNames: WeaponName[]) {
     const weapons = await this.prismaService.weapon.findMany({
       include: { _count: true },
-      where: { displayName: displayNames ? { in: displayNames } : undefined },
+      where: { displayName: { in: displayNames } },
     });
 
     const groups: Map<string, any[]> = new Map();
-
     weapons.map((weapon) => {
       const { category, ...rest } = weapon;
 
