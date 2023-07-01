@@ -58,6 +58,7 @@ enum AbilitySlot {
   Ability2
   Grenade
   Ultimate
+  Passive
 
   @@map("ability_slot")
 }
@@ -67,7 +68,7 @@ model AgentAbility {
   slot        AbilitySlot
   displayName String      @map("display_name")
   description String
-  displayIcon String      @map("display_icon")
+  displayIcon String?     @map("display_icon")
 
   agent Agent @relation(fields: [agentUuid], references: [uuid])
 
