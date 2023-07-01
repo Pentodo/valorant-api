@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { WeaponName } from './weapons.interface';
 
@@ -41,5 +42,27 @@ export class WeaponsService {
         skins: weapon._count.skins,
       })),
     }));
+  }
+
+  async getPaginated(
+    skip: number,
+    take: number,
+    include: Prisma.WeaponInclude,
+    where: Prisma.WeaponWhereInput,
+  ) {
+    const [total, content] = await this.prismaService.$transaction([
+      this.prismaService.weapon.aggregate({
+        where,
+        _count: true,
+      }),
+      this.prismaService.weapon.findMany({
+        skip,
+        take,
+        include,
+        where,
+      }),
+    ]);
+
+    return { total: total._count, content };
   }
 }

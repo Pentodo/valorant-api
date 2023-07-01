@@ -1,6 +1,6 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { WeaponNamesQueryDTO } from './weapons.dto';
+import { PaginatedWeaponsBodyDTO, WeaponNamesQueryDTO } from './weapons.dto';
 import { WeaponsService } from './weapons.service';
 
 @Controller('weapons')
@@ -17,6 +17,16 @@ export class WeaponsController {
   async countSkinGroupedByCategory(@Query() query: WeaponNamesQueryDTO) {
     return await this.weaponsService.countSkinGroupedByCategory(
       query.displayNames,
+    );
+  }
+
+  @Post('paginated')
+  async postForPaginated(@Body() body: PaginatedWeaponsBodyDTO) {
+    return await this.weaponsService.getPaginated(
+      body.skip,
+      body.take,
+      body.include,
+      body.where,
     );
   }
 }
