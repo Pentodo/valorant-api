@@ -139,6 +139,11 @@ export interface BuddyData {
   displayName: string;
   themeUuid: string;
   displayIcon: string;
+  levels: [
+    {
+      uuid: string;
+    },
+  ];
 }
 
 export interface BuddyResponse {

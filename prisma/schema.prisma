@@ -128,16 +128,16 @@ model Weapon {
 model WeaponSkin {
   uuid        String  @id
   weaponUuid  String  @map("weapon_uuid")
-  tierUuid    String  @map("tier_uuid")
+  tierUuid    String? @map("tier_uuid")
   themeUuid   String  @map("theme_uuid")
   displayName String  @map("display_name")
   displayIcon String? @map("display_icon")
   wallpaper   String?
   rewardUuid  String? @unique @map("reward_uuid")
 
-  weapon Weapon      @relation(fields: [weaponUuid], references: [uuid])
-  tier   ContentTier @relation(fields: [tierUuid], references: [uuid])
-  theme  Theme       @relation(fields: [themeUuid], references: [uuid])
+  weapon Weapon       @relation(fields: [weaponUuid], references: [uuid])
+  tier   ContentTier? @relation(fields: [tierUuid], references: [uuid])
+  theme  Theme        @relation(fields: [themeUuid], references: [uuid])
 
   reward ContractReward? @relation(fields: [rewardUuid], references: [uuid])
 
@@ -283,10 +283,10 @@ enum ContractType {
 }
 
 model Contract {
-  uuid        String       @id
-  displayName String       @map("display_name")
-  displayIcon String?      @map("display_icon")
-  type        ContractType
+  uuid        String        @id
+  displayName String        @map("display_name")
+  displayIcon String?       @map("display_icon")
+  type        ContractType?
 
   rewards ContractReward[]
 

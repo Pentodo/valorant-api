@@ -32,11 +32,19 @@ http.defaults.params = new URLSearchParams({ language });
 
 (async () => {
   const agentsInput: Prisma.AgentCreateInput[] = [];
+  const rolesInput: Prisma.AgentRoleCreateManyInput[] = [];
   const agentsResponse = await http.get<AgentResponse>('/v1/agents', {
     params: new URLSearchParams({ language, isPlayableCharacter: 'true' }),
   });
 
   agentsResponse.data.data.forEach((agent) => {
+    rolesInput.push({
+      uuid: agent.role.uuid,
+      displayName: agent.role.displayName,
+      description: agent.role.description,
+      displayIcon: agent.role.displayIcon,
+    });
+
     const abilities: Prisma.AgentAbilityCreateManyAgentInput[] = [];
     agent.abilities.forEach((ability) => {
       abilities.push({
@@ -61,17 +69,7 @@ http.defaults.params = new URLSearchParams({ language });
       fullPortrait: agent.fullPortrait,
       killfeedPortrait: agent.killfeedPortrait,
       voiceLine: agent.voiceLine.mediaList[0].wave,
-      role: {
-        connectOrCreate: {
-          where: { uuid: agent.role.uuid },
-          create: {
-            uuid: agent.role.uuid,
-            displayName: agent.role.displayName,
-            description: agent.role.description,
-            displayIcon: agent.role.displayIcon,
-          },
-        },
-      },
+      role: { connect: { uuid: agent.role.uuid } },
       abilities: {
         createMany: {
           data: abilities,
@@ -87,9 +85,8 @@ http.defaults.params = new URLSearchParams({ language });
     });
   });
 
-  await Promise.allSettled(
-    agentsInput.map((data) => prisma.agent.create({ data })),
-  );
+  await prisma.agentRole.createMany({ data: rolesInput, skipDuplicates: true });
+  await Promise.all(agentsInput.map((data) => prisma.agent.create({ data })));
 
   const contentTiersInput: Prisma.ContentTierCreateManyInput[] = [];
   const contentTiersResponse = await http.get<ContentTierResponse>(
@@ -127,10 +124,21 @@ http.defaults.params = new URLSearchParams({ language });
     skipDuplicates: true,
   });
 
+  const weaponsInput: Prisma.WeaponCreateManyInput[] = [];
   const skinsInput: Prisma.WeaponSkinCreateInput[] = [];
   const weaponsResponse = await http.get<WeaponResponse>('/v1/weapons');
 
+  const levelToSkin: Map<string, string> = new Map();
+
   weaponsResponse.data.data.forEach((weapon) => {
+    weaponsInput.push({
+      uuid: weapon.uuid,
+      displayName: weapon.displayName,
+      displayIcon: weapon.displayIcon,
+      killStreamIcon: weapon.killStreamIcon,
+      category: WeaponCategory[weapon.category.split('::')[1]],
+    });
+
     weapon.skins.forEach((skin) => {
       const chromas: Prisma.WeaponSkinChromaCreateManySkinInput[] = [];
       skin.chromas.forEach((chroma) => {
@@ -144,14 +152,16 @@ http.defaults.params = new URLSearchParams({ language });
       });
 
       const levels: Prisma.WeaponSkinLevelCreateManySkinInput[] = [];
-      skin.levels.forEach((chroma) => {
+      skin.levels.forEach((level) => {
         levels.push({
-          uuid: chroma.uuid,
-          displayName: chroma.displayName,
-          displayIcon: chroma.displayIcon,
-          type: chroma.levelItem,
-          video: chroma.streamedVideo,
+          uuid: level.uuid,
+          displayName: level.displayName,
+          displayIcon: level.displayIcon,
+          type: level.levelItem,
+          video: level.streamedVideo,
         });
+
+        levelToSkin.set(level.uuid, skin.uuid);
       });
 
       skinsInput.push({
@@ -160,19 +170,12 @@ http.defaults.params = new URLSearchParams({ language });
         displayIcon: skin.displayIcon,
         wallpaper: skin.wallpaper,
         theme: { connect: { uuid: skin.themeUuid } },
-        tier: { connect: { uuid: skin.contentTierUuid } },
-        weapon: {
-          connectOrCreate: {
-            where: { uuid: weapon.uuid },
-            create: {
-              uuid: weapon.uuid,
-              displayName: weapon.displayName,
-              displayIcon: weapon.displayIcon,
-              killStreamIcon: weapon.killStreamIcon,
-              category: WeaponCategory[weapon.category.split('::')[1]],
-            },
-          },
+        tier: {
+          connect: skin.contentTierUuid
+            ? { uuid: skin.contentTierUuid }
+            : undefined,
         },
+        weapon: { connect: { uuid: weapon.uuid } },
         chromas: {
           createMany: {
             data: chromas,
@@ -189,7 +192,8 @@ http.defaults.params = new URLSearchParams({ language });
     });
   });
 
-  await Promise.allSettled(
+  await prisma.weapon.createMany({ data: weaponsInput, skipDuplicates: true });
+  await Promise.all(
     skinsInput.map((data) => prisma.weaponSkin.create({ data })),
   );
 
@@ -229,7 +233,7 @@ http.defaults.params = new URLSearchParams({ language });
     });
   });
 
-  await Promise.allSettled(
+  await Promise.all(
     episodesInput.map((data) => prisma.episode.create({ data })),
   );
 
@@ -266,6 +270,8 @@ http.defaults.params = new URLSearchParams({ language });
   const buddiesInput: Prisma.BuddyCreateManyInput[] = [];
   const buddiesResponse = await http.get<BuddyResponse>('/v1/buddies');
 
+  const levelToBuddy: Map<string, string> = new Map();
+
   buddiesResponse.data.data.forEach((buddy) => {
     buddiesInput.push({
       uuid: buddy.uuid,
@@ -273,6 +279,8 @@ http.defaults.params = new URLSearchParams({ language });
       displayIcon: buddy.displayIcon,
       themeUuid: buddy.themeUuid,
     });
+
+    buddy.levels.forEach((level) => levelToBuddy.set(level.uuid, buddy.uuid));
   });
 
   await prisma.buddy.createMany({
@@ -339,10 +347,18 @@ http.defaults.params = new URLSearchParams({ language });
     skipDuplicates: true,
   });
 
+  const contractsInput: Prisma.ContractCreateManyInput[] = [];
   const rewardsInput: Prisma.ContractRewardCreateInput[] = [];
   const contractsResponse = await http.get<ContractResponse>('/v1/contracts');
 
   contractsResponse.data.data.forEach((contract) => {
+    contractsInput.push({
+      uuid: contract.uuid,
+      displayName: contract.displayName,
+      displayIcon: contract.displayIcon,
+      type: contract.content.relationType,
+    });
+
     contract.content.chapters.forEach((chapter) => {
       const greaterXP = Math.max(...chapter.levels.map((level) => level.xp));
 
@@ -360,19 +376,7 @@ http.defaults.params = new URLSearchParams({ language });
           isFree: level.reward.isFree || false,
           xp: level.xp,
           vpCost: level.vpCost,
-          contract: {
-            connectOrCreate: {
-              where: {
-                uuid: contract.uuid,
-              },
-              create: {
-                uuid: contract.uuid,
-                displayName: contract.displayName,
-                displayIcon: contract.displayIcon,
-                type: contract.content.relationType,
-              },
-            },
-          },
+          contract: { connect: { uuid: contract.uuid } },
         };
 
         const typeToEntity = {
@@ -384,7 +388,19 @@ http.defaults.params = new URLSearchParams({ language });
           EquippableSkinLevel: 'skin',
         };
 
-        if (rewardInput.type !== RewardType.Currency) {
+        if (typeToEntity[rewardInput.type] === 'skin') {
+          rewardInput.skin = {
+            connect: {
+              uuid: levelToSkin.get(level.reward.uuid),
+            },
+          };
+        } else if (typeToEntity[rewardInput.type] === 'buddy') {
+          rewardInput.buddy = {
+            connect: {
+              uuid: levelToBuddy.get(level.reward.uuid),
+            },
+          };
+        } else if (rewardInput.type !== RewardType.Currency) {
           rewardInput[typeToEntity[rewardInput.type]] = {
             connect: {
               uuid: level.reward.uuid,
@@ -397,7 +413,11 @@ http.defaults.params = new URLSearchParams({ language });
     });
   });
 
-  await Promise.allSettled(
+  await prisma.contract.createMany({
+    data: contractsInput,
+    skipDuplicates: true,
+  });
+  await Promise.all(
     rewardsInput.map((data) => prisma.contractReward.create({ data })),
   );
 })()
