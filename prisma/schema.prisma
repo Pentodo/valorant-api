@@ -295,11 +295,11 @@ model Contract {
 
 enum RewardType {
   Spray
-  PlayerCard
+  Card
   Title
   Character
-  EquippableCharmLevel
-  EquippableSkinLevel
+  Buddy
+  Skin
   Currency
 
   @@map("reward_type")

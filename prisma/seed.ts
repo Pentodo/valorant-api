@@ -372,13 +372,14 @@ http.defaults.params = new URLSearchParams({ language });
 
       chapter.levels.forEach((level) => {
         const rewardInput: Prisma.ContractRewardCreateInput = {
-          type: level.reward.type,
+          type: undefined,
           isFree: level.reward.isFree || false,
           xp: level.xp,
           vpCost: level.vpCost,
           contract: { connect: { uuid: contract.uuid } },
         };
 
+        const originalType = level.reward.type;
         const typeToEntity = {
           Spray: 'spray',
           PlayerCard: 'card',
@@ -388,24 +389,34 @@ http.defaults.params = new URLSearchParams({ language });
           EquippableSkinLevel: 'skin',
         };
 
-        if (typeToEntity[rewardInput.type] === 'skin') {
+        if (originalType === 'EquippableSkinLevel') {
+          rewardInput.type = RewardType.Skin;
           rewardInput.skin = {
             connect: {
               uuid: levelToSkin.get(level.reward.uuid),
             },
           };
-        } else if (typeToEntity[rewardInput.type] === 'buddy') {
+        } else if (originalType === 'EquippableCharmLevel') {
+          rewardInput.type = RewardType.Buddy;
           rewardInput.buddy = {
             connect: {
               uuid: levelToBuddy.get(level.reward.uuid),
             },
           };
-        } else if (rewardInput.type !== RewardType.Currency) {
-          rewardInput[typeToEntity[rewardInput.type]] = {
+        } else if (originalType !== 'Currency') {
+          if (originalType === 'PlayerCard') {
+            rewardInput.type = 'Card';
+          } else {
+            rewardInput.type = originalType;
+          }
+
+          rewardInput[typeToEntity[originalType]] = {
             connect: {
               uuid: level.reward.uuid,
             },
           };
+        } else {
+          rewardInput.type = originalType;
         }
 
         rewardsInput.push(rewardInput);

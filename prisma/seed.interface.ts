@@ -1,4 +1,4 @@
-import { ContractType, RewardType } from '@prisma/client';
+import { ContractType } from '@prisma/client';
 
 export interface AgentData {
   uuid: string;
@@ -193,7 +193,14 @@ export interface TitleResponse {
 
 export interface Reward {
   uuid: string;
-  type: RewardType;
+  type:
+    | 'Spray'
+    | 'PlayerCard'
+    | 'Title'
+    | 'Character'
+    | 'EquippableCharmLevel'
+    | 'EquippableSkinLevel'
+    | 'Currency';
   isFree?: boolean;
 }
 
